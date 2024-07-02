@@ -10,7 +10,7 @@ class TimeZoneWindow(Gtk.Window):
         self.current_timezone = get_current_timezone()
         self._set_window_dimensions()
         self._add_main_window_view()
-        self._add_current_timezone_info()
+        self._set_up_current_timezone_info()
         self._set_up_liststore()
         self._add_filter_ui()
         self._add_treeview_scroller()
@@ -26,7 +26,6 @@ class TimeZoneWindow(Gtk.Window):
         column.set_cell_data_func(renderer, self._highlight_func)
         self.filter_entry.connect("changed", self._on_filter_entry_changed)
         self.scrolled_window.add(self.treeview)
-
 
     def _add_treeview_scroller(self):
         self.scrolled_window = Gtk.ScrolledWindow()
@@ -62,16 +61,13 @@ class TimeZoneWindow(Gtk.Window):
         self.filter_entry.set_placeholder_text("Type to filter time zones")
         self.vbox.pack_start(self.filter_entry, False, False, 0)
 
-    def _add_current_timezone_info(self):
+    def _set_up_current_timezone_info(self):
         tz_label = Gtk.Label(label="Current:")
         current_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self._set_current_timezone_label()
+        self.tz_text = Gtk.Label(label=self.current_timezone)
         current_box.pack_start(tz_label, True, True, 0)
         current_box.pack_end(self.tz_text, True, True, 0)
         self.vbox.add(current_box)
-
-    def _set_current_timezone_label(self):
-        self.tz_text = Gtk.Label(label=self.current_timezone)
 
     def _add_main_window_view(self):
         self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
