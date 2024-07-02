@@ -23,8 +23,8 @@ class TimeZoneWindow(Gtk.Window):
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Time Zone", renderer, text=0)
         self.treeview.append_column(column)
-        column.set_cell_data_func(renderer, self.highlight_func)
-        self.filter_entry.connect("changed", self.on_filter_entry_changed)
+        column.set_cell_data_func(renderer, self._highlight_func)
+        self.filter_entry.connect("changed", self._on_filter_entry_changed)
         self.scrolled_window.add(self.treeview)
 
 
@@ -43,9 +43,10 @@ class TimeZoneWindow(Gtk.Window):
         selection = self.treeview.get_selection()
         model, treeiter = selection.get_selected()
         if treeiter is not None:
-            selected_timezone = model[treeiter][0]
-            print(f"Committing changes for timezone: {selected_timezone}")
-            subprocess.run(['pkexec', 'timedatectl', 'set-timezone', selected_timezone], check=True)
+            self.current_timezone = model[treeiter][0]
+            print(f"Committing changes for timezone: {self.current_timezone}")
+            subprocess.run(['timedatectl', 'set-timezone', self.current_timezone], check=True)
+            self.tz_text.set_text(self.current_timezone)
         else:
             print("No timezone selected")
 
@@ -54,7 +55,7 @@ class TimeZoneWindow(Gtk.Window):
         for tz in sorted(pytz.all_timezones):
             self.store.append([tz])
         self.filter = self.store.filter_new()
-        self.filter.set_visible_func(self.timezone_filter_func)
+        self.filter.set_visible_func(self._timezone_filter_func)
 
     def _add_filter_ui(self):
         self.filter_entry = Gtk.Entry()
@@ -80,16 +81,16 @@ class TimeZoneWindow(Gtk.Window):
         self.set_border_width(10)
         self.set_default_size(600, 400)
 
-    def timezone_filter_func(self, model, iter, data):
+    def _timezone_filter_func(self, model, iter, data):
         if self.filter_entry.get_text() == '':
             return True
         else:
             return self.filter_entry.get_text().lower() in model[iter][0].lower()
 
-    def on_filter_entry_changed(self, entry):
+    def _on_filter_entry_changed(self, entry):
         self.filter.refilter()
 
-    def highlight_func(self, column, cell, model, iter, data):
+    def _highlight_func(self, column, cell, model, iter, data):
         if model[iter][0] == self.current_timezone:
             cell.set_property('background', 'lightblue')
             cell.set_property('foreground', 'black')
