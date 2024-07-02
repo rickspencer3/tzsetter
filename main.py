@@ -12,59 +12,68 @@ class TimeZoneWindow(Gtk.Window):
         super().__init__(title="Available Time Zones")
 
         self.current_timezone = get_current_timezone()
+        self._set_window_dimensions()
+        self._add_main_window_view()
+        self._add_current_timezone_info()
+        self._add_filter_ui()
+        self._set_up_liststore()
+        self._add_treeview_scroller()
+        self._set_up_treeview()
+        self.show_all()
 
-        self.set_border_width(10)
-        self.set_default_size(600, 400)
+    def _set_up_treeview(self):
+        self.treeview = Gtk.TreeView(model=self.filter)
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Time Zone", renderer, text=0)
+        self.treeview.append_column(column)
+        
 
-        # Vertical box to hold widgets
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.add(vbox)
+        column.set_cell_data_func(renderer, self.highlight_func)
+        self.filter_entry.connect("changed", self.on_filter_entry_changed)
+        self.scrolled_window.add(self.treeview)
 
-        #Current Time Zone
+    def _add_treeview_scroller(self):
+        self.scrolled_window = Gtk.ScrolledWindow()
+        self.scrolled_window.set_vexpand(True) 
+
+        self.vbox.pack_start(self.scrolled_window, True, True, 0)
+
+    def _set_up_liststore(self):
+        self.store = Gtk.ListStore(str)
+        for tz in sorted(pytz.all_timezones):
+            self.store.append([tz])
+
+        self.filter = self.store.filter_new()
+        self.filter.set_visible_func(self.timezone_filter_func)
+
+    def _add_filter_ui(self):
+        self.filter_entry = Gtk.Entry()
+        self.filter_entry.set_placeholder_text("Type to filter time zones")
+        self.vbox.pack_start(self.filter_entry, False, False, 0)
+
+    def _add_current_timezone_info(self):
         tz_label = Gtk.Label(label="Current:")
 
         current_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         current_box.pack_start(tz_label, True, True, 0)
 
-        tz_text = Gtk.Label(label=self.current_timezone)
-        current_box.pack_end(tz_text, True, True, 0)
+        self._set_current_timezone_label()
+        current_box.pack_end(self.tz_text, True, True, 0)
 
-        vbox.add(current_box)
+        self.vbox.add(current_box)
+        return current_box
 
-        # Entry for filtering
-        self.filter_entry = Gtk.Entry()
-        self.filter_entry.set_placeholder_text("Type to filter time zones")
-        vbox.pack_start(self.filter_entry, False, False, 0)
+    def _set_current_timezone_label(self):
+        self.tz_text = Gtk.Label(label=self.current_timezone)
 
-        # Create a TreeStore with one string column to store time zone data
-        self.store = Gtk.ListStore(str)
-        for tz in sorted(pytz.all_timezones):
-            self.store.append([tz])
+    def _add_main_window_view(self):
+        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.add(self.vbox)
+        return self.vbox
 
-        # TreeModelFilter for filtering the TreeStore
-        self.filter = self.store.filter_new()
-        self.filter.set_visible_func(self.timezone_filter_func)
-
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.set_vexpand(True) 
-
-        vbox.pack_start(scrolled_window, True, True, 0)
-
-
-        # TreeView setup
-        self.treeview = Gtk.TreeView(model=self.filter)
-        renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Time Zone", renderer, text=0)
-        self.treeview.append_column(column)
-        scrolled_window.add(self.treeview)
-
-        column.set_cell_data_func(renderer, self.highlight_func)
-
-        # Connect the entry signal
-        self.filter_entry.connect("changed", self.on_filter_entry_changed)
-
-        # Show all widgets
-        self.show_all()
+    def _set_window_dimensions(self):
+        self.set_border_width(10)
+        self.set_default_size(600, 400)
 
 
     def timezone_filter_func(self, model, iter, data):
