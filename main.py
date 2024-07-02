@@ -14,7 +14,7 @@ class TimeZoneWindow(Gtk.Window):
         self.current_timezone = get_current_timezone()
 
         self.set_border_width(10)
-        self.set_default_size(300, 400)
+        self.set_default_size(600, 400)
 
         # Vertical box to hold widgets
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -45,12 +45,18 @@ class TimeZoneWindow(Gtk.Window):
         self.filter = self.store.filter_new()
         self.filter.set_visible_func(self.timezone_filter_func)
 
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.set_vexpand(True) 
+
+        vbox.pack_start(scrolled_window, True, True, 0)
+
+
         # TreeView setup
         self.treeview = Gtk.TreeView(model=self.filter)
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Time Zone", renderer, text=0)
         self.treeview.append_column(column)
-        vbox.pack_start(self.treeview, True, True, 0)
+        scrolled_window.add(self.treeview)
 
         column.set_cell_data_func(renderer, self.highlight_func)
 
