@@ -45,6 +45,7 @@ class TimeZoneWindow(Gtk.Window):
         if treeiter is not None:
             selected_timezone = model[treeiter][0]
             print(f"Committing changes for timezone: {selected_timezone}")
+            subprocess.run(['pkexec', 'timedatectl', 'set-timezone', selected_timezone], check=True)
         else:
             print("No timezone selected")
 
