@@ -15,6 +15,7 @@ class TimeZoneWindow(Gtk.Window):
         self._add_filter_ui()
         self._add_treeview_scroller()
         self._set_up_treeview()
+        self._set_up_commit_button()
         self.show_all()
 
     def _set_up_treeview(self):
@@ -26,10 +27,26 @@ class TimeZoneWindow(Gtk.Window):
         self.filter_entry.connect("changed", self.on_filter_entry_changed)
         self.scrolled_window.add(self.treeview)
 
+
     def _add_treeview_scroller(self):
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_vexpand(True)
         self.vbox.pack_start(self.scrolled_window, True, True, 0)
+    
+    def _set_up_commit_button(self):
+        commit_button = Gtk.Button(label="Commit")
+        commit_button.connect("clicked", self._on_commit_clicked)
+        self.vbox.pack_end(commit_button, False, False, 0)  # Pack the button into the vbox
+
+
+    def _on_commit_clicked(self, button):
+        selection = self.treeview.get_selection()
+        model, treeiter = selection.get_selected()
+        if treeiter is not None:
+            selected_timezone = model[treeiter][0]
+            print(f"Committing changes for timezone: {selected_timezone}")
+        else:
+            print("No timezone selected")
 
     def _set_up_liststore(self):
         self.store = Gtk.ListStore(str)
