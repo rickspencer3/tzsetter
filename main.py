@@ -62,8 +62,9 @@ class TimeZoneWindow(Gtk.Window):
         self.vbox.pack_start(self.filter_entry, False, False, 0)
 
     def _set_up_current_timezone_info(self):
-        tz_label = Gtk.Label(label="Current:")
-        current_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        tz_label = Gtk.Label()
+        tz_label.set_markup("<b>Current Timezone</b>")
+        current_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.tz_text = Gtk.Label(label=self.current_timezone)
         current_box.pack_start(tz_label, True, True, 0)
         current_box.pack_end(self.tz_text, True, True, 0)
